@@ -157,6 +157,7 @@ AudioPlayer = class {
   }
 
   load(trackIndex) {
+    this.loadedFlag = true;
     if (this.currentTrackIndex === trackIndex) {
       return;
     }
