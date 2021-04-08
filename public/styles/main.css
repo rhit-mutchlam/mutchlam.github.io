@@ -5,8 +5,14 @@
 
     --accent: #FFB745;
     --link-hover: #A7A7A7;
+    --link-primary: #ffffff;
+    --text-primary: #ffffff;
     --primary-dark: #b8b8b8;
     --primary-super-dark: #225c6a;
+}
+
+*, :after, :before {
+    box-sizing: border-box;
 }
 
 body {
@@ -16,23 +22,23 @@ body {
     font-weight: 400;
     font-style: normal;
     background-color: var(--body-background);
-    color: white;
-}
-
-*, :after, :before {
-    box-sizing: border-box;
+    color: var(--text-primary);
 }
 
 h1, h2, h3 {
     line-height: 1.2em;
 }
 
+h1 {
+    text-align: center;
+}
+
 a {
     text-decoration: none;
 }
 
-h1 {
-    text-align: center;
+.s-hr {
+    width: 80%;
 }
 
 header {
@@ -42,14 +48,11 @@ header {
 
 .nav-link {
     margin: 0 2em;
-}
-
-header a {
-    color: white;
+    color: var(--link-primary);
     transition: color 0.5s;
 }
 
-header a:hover, header a:active {
+.nav-link:hover, .nav-link:active {
     color: var(--link-hover);
 }
 
@@ -57,8 +60,8 @@ main {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding: 5px 15px;
-    background-color: var(--primary-super-dark);
+    padding: 5px 3em;
+    background-color: var(--main-background);
 }
 
 footer {
@@ -71,7 +74,7 @@ footer {
 }
 
 footer svg {
-    fill: white;
+    fill: var(--link-primary);
     transition: fill 0.5s;
 }
 
@@ -85,11 +88,17 @@ footer svg:hover, footer svg:active {
     margin-bottom: auto;
 }
 
-body#about img {
+.about-headshot-right {
     width: 100%;
     height: auto;
     padding: 1em;
-    order: -1;
+}
+
+.about-headshot-left {
+    width: 100%;
+    height: auto;
+    padding: 1em;
+    order: 0;
 }
 
 body#about section, body#portfolio section {
@@ -153,16 +162,18 @@ body#portfolio section {
     outline: 0;
     padding: 0.5em;
     margin: auto;
+    transition: background-color 0.5s;
 }
 
 .read-more:hover, .read-more:active {
-    background-color: #e2e2e2;
+    background-color: var(--link-hover);
 }
 
 
-body#portfolio #modal {
+#modal {
     display: none;
     position: fixed;
+    overflow: auto !important;
     z-index: 1;
     left: 0;
     top: 0;
@@ -178,7 +189,7 @@ body#portfolio #modal {
     margin: 15% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 40%;
+    width: 80%;
     color: #343434;
 }
 
@@ -230,6 +241,11 @@ body#portfolio #modal {
     border: 0;
     outline: 0;
     background-color: transparent;
+    cursor: pointer;
+}
+
+.play-button {
+    cursor: pointer;
 }
 
 .transport-display {
@@ -267,6 +283,11 @@ body#portfolio #modal {
     width: 80%;
 }
 
+.resume-description {
+    width: 60%;
+    font-size: 0.8em;
+}
+
 .job-title {
     width: 80%;
 }
@@ -294,17 +315,13 @@ body#resume dt {
     }
 }
 
+
 @media (min-width: 768px) {
     main {
         max-width: 720px;
     }
-    body#about section, body#portfolio section {
+    body#portfolio section {
         flex-direction: row;
-    }
-    body#about img {
-        width: 18em;
-        height: 18em;
-        order: 0;
     }
     .portfolio-item {
         width: 50%;
@@ -315,8 +332,22 @@ body#resume dt {
     main {
         max-width: 1140px;
     }
+    body#about section {
+        flex-direction: row;
+    }
+    .about-headshot-right {
+        width: 33%;
+    }
+
+    .about-headshot-left {
+        width: 33%;
+        order: -1;
+    }
     .portfolio-item {
         width: 33%;
+    }
+    .modal-content {
+        width: 60%;
     }
 }
 

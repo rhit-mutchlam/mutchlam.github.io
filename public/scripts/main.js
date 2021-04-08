@@ -1,7 +1,6 @@
 AudioTrack = class {
   constructor(src) {
-    this.track = document.createElement("audio");
-    this.track.src = src;
+    this.src = src;
     this.title = "";
     this.artist = "";
     this.description = "";
@@ -62,40 +61,183 @@ theHenrysons.artist = "Erin Mutchler";
 theHenrysons.description = "This song was performed as part of Erin's senior recital at the Frost School of Music. The tune was composed by Wolfgang Muthspiel and Ralph Towner.";
 theHenrysons.personnel = ["Composition: Woflgang Musthpiel", "Trumpet: Erin Mutchler", "Guitar: Joshua Bermudez", "Guitar: Jordan Rattner"];
 
+const trackList = [ranek, nobleSavage, downTheLine, kiitos, shenandoah, theHenrysons];
 
-let modal = document.getElementById("modal");
-let trackTitle = document.getElementById("modal-track-title");
-let trackArtist = document.getElementById("modal-track-artist");
-let trackDescription = document.getElementById("modal-track-description");
-let trackPersonnel = document.getElementById("modal-track-personnel");
-let trackList = [];
+Modal = class {
+  constructor() {
+    this.modal = document.getElementById("modal");
+    this.trackSelectors = {
+      title: document.getElementById("modal-track-title"),
+      artist: document.getElementById("modal-track-artist"),
+      description: document.getElementById("modal-track-description"),
+      personnel: document.getElementById("modal-track-personnel"),
+    };
 
-trackList.push(ranek, nobleSavage, downTheLine, kiitos, shenandoah, theHenrysons);
+    document.querySelectorAll(".read-more").forEach((button) => {
+      button.onclick = function() {
+        const trackIndex = parseInt(button.dataset.trackIndex);
+        this.updateTrackInfo(trackIndex);
+        this.modal.style.display = "block";
+      }.bind(this);
+    });
 
+    document.querySelector(".modal-close").onclick = function() {
+      this.modal.style.display = "none";
+    }.bind(this);
 
-updateModal = function(trackIndex) {
-  trackTitle.textContent = trackList[trackIndex].title;
-  trackArtist.textContent = trackList[trackIndex].artist;
-  trackDescription.textContent = trackList[trackIndex].description;
-  trackPersonnel.innerHTML = "";
+    window.addEventListener("keydown", function(event) {
+      this.modal.style.display = "none";
+    }.bind(this));
 
-  trackList[trackIndex].personnel.forEach((item, index) => {
-    let person = document.createElement("li");
-    person.textContent = trackList[trackIndex].personnel[index];
-    trackPersonnel.appendChild(person);
-  });
-}
+    window.onclick = function(event) {
+      if (event.target == this.modal) {
+        this.modal.style.display = "none";
+      }
+    }.bind(this);
 
-document.querySelectorAll(".read-more").forEach((button) => {
-  button.onclick = () => {
-    updateModal(parseInt(button.dataset.trackIndex));
-    modal.style.display = "block";
+    this.updateTrackInfo(0);
   }
-});
 
-document.querySelector(".modal-close").onclick = () => {
-  modal.style.display = "none";
+  updateTrackInfo(trackIndex) {
+    this.trackSelectors.title.textContent = trackList[trackIndex].title;
+    this.trackSelectors.artist.textContent = trackList[trackIndex].artist;
+    this.trackSelectors.description.textContent = trackList[trackIndex].description;
+    this.trackSelectors.personnel.innerHTML = "";
+    for (let i = 0; i < trackList[trackIndex].personnel.length; ++i) {
+      let person = document.createElement("li");
+      person.textContent = trackList[trackIndex].personnel[i];
+      this.trackSelectors.personnel.appendChild(person);
+    }
+  }
 }
+
+AudioPlayer = class {
+  constructor() {
+    this.track = document.createElement("audio");
+
+    this.currentTrackIndex = -1;
+    this.loadedFlag = false;
+    this.isPlaying = false;
+    this.updateTimer = "";
+
+    this.transportSelectors = {
+      slider: document.getElementById("transport-slider"),
+      currentTime: document.getElementById("current-time"),
+      totalDuration: document.getElementById("total-duration"),
+      playPauseIcon: document.getElementById("transport-play-pause-icon"),
+    }
+
+    document.querySelectorAll(".play-button").forEach((button) => {
+      button.onclick = function() {
+        this.load(button.dataset.trackIndex);
+        this.play();
+      }.bind(this);
+    });
+
+    document.querySelectorAll(".transport-button").forEach((button) => {
+      button.onclick = function() {
+        const transportFunction = parseInt(button.dataset.transportFunction);
+        if (!this.loadedFlag) {
+          this.load(0);
+          this.loadedFlag = true;
+        }
+        if (transportFunction === -1) {
+          this.prev();
+        } else if (transportFunction === 0) {
+          this.toggle();
+        } else if (transportFunction === 1) {
+          this.next();
+        } else {
+          console.log("Transport Function is not valid");
+        }
+      }.bind(this);
+    });
+
+    this.transportSelectors.slider.onchange = this.seekTo.bind(this);
+  }
+
+  load(trackIndex) {
+    if (this.currentTrackIndex === trackIndex) {
+      return;
+    }
+    this.currentTrackIndex = trackIndex;
+    this.track.src = trackList[this.currentTrackIndex].src;
+    this.track.load();
+    clearInterval(this.updateTimer);
+    this.resetTransport();
+
+    this.updateTimer = setInterval(this.seekUpdate.bind(this), 1000);
+  }
+
+  play() {
+    this.track.play();
+    this.isPlaying = true;
+    this.transportSelectors.playPauseIcon.src = "images/button-icons/pause-circle.svg";
+  }
+
+  pause() {
+    this.track.pause();
+    this.isPlaying = false;
+    this.transportSelectors.playPauseIcon.src = "images/button-icons/play-circle.svg";
+  }
+
+  prev() {
+    this.load((this.currentTrackIndex - 1 + trackList.length) % trackList.length);
+    this.play();
+  }
+
+  next() {
+    this.load((this.currentTrackIndex + 1 + trackList.length) % trackList.length);
+    this.play();
+  }
+
+  toggle() {
+    if (this.isPlaying) {
+      this.pause();
+    } else {
+      this.play();
+    }
+  }
+
+  resetTransport() {
+    this.transportSelectors.currentTime.textContent = "00:00";
+    this.transportSelectors.totalDuration.textContent = "00:00";
+    this.transportSelectors.slider.value = 0;
+  }
+
+  seekTo() {
+    this.track.currentTime = this.track.duration * (this.transportSelectors.slider.value / 100);
+  }
+
+  seekUpdate() {
+    if (!isNaN(this.track.duration)) {
+      this.transportSelectors.slider.value = this.track.currentTime * (100 / this.track.duration);
+
+      let currentMinutes = this._pad(Math.floor(this.track.currentTime / 60));
+      let currentSeconds = this._pad(Math.floor(this.track.currentTime - currentMinutes * 60));
+      let durationMinutes = this._pad(Math.floor(this.track.duration / 60));
+      let durationSeconds = this._pad(Math.floor(this.track.duration - durationMinutes * 60));
+
+      this.transportSelectors.currentTime.textContent = currentMinutes + ":" + currentSeconds;
+      this.transportSelectors.totalDuration.textContent = durationMinutes + ":" + durationSeconds;
+    }
+  }
+
+  _pad(n) {
+    return (n < 10) ? ("0" + n) : n;
+  }
+}
+
+
+const main = function() {
+  let modal = new Modal();
+  let audioPlayer = new AudioPlayer();
+}
+
+main();
+
+
+
 
 
 
