@@ -168,6 +168,10 @@ AudioPlayer = class {
     this.resetTransport();
 
     this.updateTimer = setInterval(this.seekUpdate.bind(this), 1000);
+
+    this.track.onended = function() {
+      this.transportSelectors.playPauseIcon.src = "images/button-icons/play-circle.svg";
+    }.bind(this);
   }
 
   play() {
